@@ -12,31 +12,30 @@ const {
 
 const {
   getLinksController,
-  newLinksController,
-  getSingleLinksController,
-  deleteLinksController,
+  newLinkController,
+  getSingleLinkController,
+  deleteLinkController,
 } = require('./controllers/links');
 
-const { authUser } = require('./middlewares/auth');
+const { authUser } = require('./middlewares/authUser');
+
+const { PORT } = process.env;
 
 const app = express();
 
 app.use(fileUpload());
 app.use(express.json());
 app.use(morgan('dev'));
-app.use('/uploads', express.static('./uploads'));
-
+app.use(express.static('./uploads'));
 
 app.post('/user', newUserController);
 app.get('/user/:id', getUserController);
 app.post('/login', loginController);
 
-
-app.post('/', authUser, newLinksController);
+app.post('/', authUser, newLinkController);
 app.get('/', getLinksController);
-app.get('/links/:id', getSingleLinksController);
-app.delete('/links/:id', authUser, deleteLinksController);
-
+app.get('/links/:id', getSingleLinkController);
+app.delete('/links/:id', authUser, deleteLinkController);
 
 app.use((req, res) => {
   res.status(404).send({
@@ -44,7 +43,6 @@ app.use((req, res) => {
     message: 'Not found',
   });
 });
-
 
 app.use((error, req, res, next) => {
   console.error(error);
@@ -55,7 +53,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log('Server On');
 });

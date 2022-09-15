@@ -27,17 +27,13 @@ const newLinkController = async (req, res, next) => {
     const { text } = req.body;
 
     if (req.files && req.files.image) {
-      
       const uploadsDir = path.join(__dirname, '../uploads');
 
-      
       await createPathIfNotExists(uploadsDir);
 
-      
       const image = sharp(req.files.image.data);
       image.resize(1000);
 
-      
       imageFileName = `${nanoid(24)}.jpg`;
 
       await image.toFile(path.join(uploadsDir, imageFileName));
@@ -70,21 +66,14 @@ const getSingleLinkController = async (req, res, next) => {
 
 const deleteLinkController = async (req, res, next) => {
   try {
-    
     const { id } = req.params;
 
-    
     const link = await getLinkById(id);
 
-    
     if (req.userId !== link.user_id) {
-      throw generateError(
-        'ese link no es tuyo',
-        401
-      );
+      throw generateError('ese link no es tuyo', 401);
     }
 
-    
     await deteleLinkById(id);
 
     res.send({
