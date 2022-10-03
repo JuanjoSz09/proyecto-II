@@ -4,10 +4,14 @@ const {
   getLinkById,
   deteleLinkById,
 } = require('../db/links');
-const { generateError, createPathIfNotExists } = require('../helpers');
-const path = require('path');
-const sharp = require('sharp');
-const { nanoid } = require('nanoid');
+
+const { generateError } = require('../helpers');
+
+/**
+ * ########################
+ * ## getLinksController ##
+ * ########################
+ */
 
 const getLinksController = async (req, res, next) => {
   try {
@@ -15,31 +19,30 @@ const getLinksController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      data: links,
+      data: {
+        links,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
+/**
+ * ########################
+ * ## newLinkController ##
+ * ########################
+ */
+
 const newLinkController = async (req, res, next) => {
   try {
-    const { text } = req.body;
+    const { title, description, url } = req.body;
 
-    if (req.files && req.files.image) {
-      const uploadsDir = path.join(__dirname, '../uploads');
-
-      await createPathIfNotExists(uploadsDir);
-
-      const image = sharp(req.files.image.data);
-      image.resize(1000);
-
-      imageFileName = `${nanoid(24)}.jpg`;
-
-      await image.toFile(path.join(uploadsDir, imageFileName));
+    if (!title || !description || !url) {
+      throw generateError('title, description y url necesario', 400);
     }
 
-    const id = await createLink(req.userId, text, imageFileName);
+    const id = await createLink(title, description, url, req.userId);
 
     res.send({
       status: 'ok',
@@ -49,6 +52,12 @@ const newLinkController = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * ########################
+ * ## getSingleLinkController ##
+ * ########################
+ */
 
 const getSingleLinkController = async (req, res, next) => {
   try {
@@ -64,21 +73,27 @@ const getSingleLinkController = async (req, res, next) => {
   }
 };
 
+/**
+ * ########################
+ * ## deleteLinkController ##
+ * ########################
+ */
+
 const deleteLinkController = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { idLink } = req.params;
 
-    const link = await getLinkById(id);
+    const link = await getLinkById(idLink);
 
-    if (req.userId !== link.user_id) {
+    if (req.userId !== link.idUser) {
       throw generateError('ese link no es tuyo', 401);
     }
 
-    await deteleLinkById(id);
+    await deteleLinkById(idLink);
 
     res.send({
       status: 'ok',
-      message: `El link con id: ${id} fue eliminado`,
+      message: `El link con id: ${idLink} fue eliminado`,
     });
   } catch (error) {
     next(error);

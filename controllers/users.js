@@ -5,14 +5,13 @@ const { createUser, getUserById, getUserByEmail } = require('../db/users');
 
 const newUserController = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
 
-    
-    if (!email || !password) {
-      throw generateError('email y password necesario', 400);
+    if (!email || !password || !username) {
+      throw generateError('email, password y username necesario', 400);
     }
 
-    const id = await createUser(email, password);
+    const id = await createUser(email, password, username);
 
     res.send({
       status: 'ok',
@@ -31,7 +30,9 @@ const getUserController = async (req, res, next) => {
 
     res.send({
       status: 'ok',
-      data: user,
+      data: {
+        user,
+      },
     });
   } catch (error) {
     next(error);
@@ -46,28 +47,25 @@ const loginController = async (req, res, next) => {
       throw generateError('email y password necesario', 400);
     }
 
-    
     const user = await getUserByEmail(email);
 
-    
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
       throw generateError('contraseña erronea', 401);
     }
 
-    
     const payload = { id: user.id };
 
-    
     const token = jwt.sign(payload, process.env.SECRET, {
       expiresIn: '30d',
     });
 
-    
     res.send({
       status: 'ok',
-      data: token,
+      data: {
+        token,
+      },
     });
   } catch (error) {
     next(error);

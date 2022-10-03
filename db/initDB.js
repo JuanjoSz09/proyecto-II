@@ -9,30 +9,48 @@ async function main() {
     connection = await getConnection();
 
     console.log('Borrando tablas existentes');
-    await connection.query('DROP TABLE IF EXISTS tweets');
+    await connection.query('DROP TABLE IF EXISTS votes');
+    await connection.query('DROP TABLE IF EXISTS links');
     await connection.query('DROP TABLE IF EXISTS users');
 
     console.log('Creando tablas');
 
     await connection.query(`
       CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTO_INCREMENT,
-        email VARCHAR(100) UNIQUE NOT NULL,
+        id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        email VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        username VARCHAR(15) UNIQUE NOT NULL,
+        created_at DATETIME NOT NULL
       );
     `);
 
     await connection.query(`
-      CREATE TABLE tweets (
-        id INTEGER PRIMARY KEY AUTO_INCREMENT,
-        user_id INTEGER NOT NULL,
-        text VARCHAR(280) NOT NULL,
-        image VARCHAR(100),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        );
+      CREATE TABLE links (
+        id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        title VARCHAR(50) NOT NULL,
+        description VARCHAR(200) NOT NULL,
+        url VARCHAR(100) NOT NULL,
+        idUser INT UNSIGNED NOT NULL,
+        FOREIGN KEY (idUser) REFERENCES users (id),
+        created_at DATETIME NOT NULL
+      );
     `);
+
+    await connection.query(`
+      CREATE TABLE votes (
+        id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	      value CHAR(1) DEFAULT 1,
+        idLink INT UNSIGNED NOT NULL,
+        FOREIGN KEY (idLink) REFERENCES links (id),
+        idUser INT UNSIGNED NOT NULL,
+        FOREIGN KEY (idUser) REFERENCES users (id),
+        created_at DATETIME NOT NULL,
+        modified_at DATETIME
+      );
+    `);
+
+    console.log('Tablas creadas');
   } catch (error) {
     console.error(error);
   } finally {

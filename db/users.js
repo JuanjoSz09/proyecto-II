@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt');
 const { generateError } = require('../helpers');
 const { getConnection } = require('./db');
 
-
 const getUserByEmail = async (email) => {
   let connection;
 
@@ -26,16 +25,15 @@ const getUserByEmail = async (email) => {
   }
 };
 
-
 const getUserById = async (id) => {
   let connection;
-
+  //si no somos el dueño de este usuario no podemos visualizar la informacion del email//
   try {
     connection = await getConnection();
 
     const [result] = await connection.query(
       `
-      SELECT id, email, created_at FROM users WHERE id = ?
+      SELECT email, username, created_at FROM users WHERE id = ?
     `,
       [id]
     );
@@ -50,13 +48,13 @@ const getUserById = async (id) => {
   }
 };
 
-
-const createUser = async (email, password) => {
+//Anadir ademas de email y password el username//
+const createUser = async (email, password, username) => {
   let connection;
 
   try {
     connection = await getConnection();
-   
+
     const [user] = await connection.query(
       `
       SELECT id FROM users WHERE email = ?
@@ -65,24 +63,18 @@ const createUser = async (email, password) => {
     );
 
     if (user.length > 0) {
-      throw generateError(
-        'Ya existe una cuenta vinculada en ese email',
-        409
-      );
+      throw generateError('Ya existe una cuenta vinculada en ese email', 409);
     }
 
-    
     const passwordHash = await bcrypt.hash(password, 8);
 
-    
     const [newUser] = await connection.query(
       `
-      INSERT INTO users (email, password) VALUES(?, ?)
+      INSERT INTO users (email, password, username, created_at) VALUES(?, ?, ?, ?)
     `,
-      [email, passwordHash]
+      [email, passwordHash, username, new Date()]
     );
 
-    
     return newUser.insertId;
   } finally {
     if (connection) connection.release();

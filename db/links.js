@@ -20,7 +20,7 @@ const deteleLinkById = async (id) => {
   }
 };
 
-const getLinkById = async (id) => {
+const getLinkById = async (idLink) => {
   let connection;
 
   try {
@@ -30,11 +30,11 @@ const getLinkById = async (id) => {
       `
       SELECT * FROM links WHERE id = ?
     `,
-      [id]
+      [idLink]
     );
 
     if (result.length === 0) {
-      throw generateError(`El link con id: ${id} no existe`, 404);
+      throw generateError(`El link con id: ${idLink} no existe`, 404);
     }
 
     return result[0];
@@ -59,7 +59,7 @@ const getAllLinks = async () => {
   }
 };
 
-const createLink = async (userId, text, image = '') => {
+const createLink = async (title, description, url, idUser) => {
   let connection;
 
   try {
@@ -67,10 +67,10 @@ const createLink = async (userId, text, image = '') => {
 
     const [result] = await connection.query(
       `
-      INSERT INTO links (user_id, text, image)
-      VALUES(?,?,?)
+      INSERT INTO links ( title, description, url, idUser, created_at )
+      VALUES(?,?,?,?,?)
     `,
-      [userId, text, image]
+      [title, description, url, idUser, new Date()]
     );
 
     return result.insertId;

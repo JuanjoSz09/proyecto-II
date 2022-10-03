@@ -18,6 +18,7 @@ const {
 } = require('./controllers/links');
 
 const { authUser } = require('./middlewares/authUser');
+const { setVote } = require('./controllers/votes');
 
 const { PORT } = process.env;
 
@@ -28,14 +29,15 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.static('./uploads'));
 
-app.post('/user', newUserController);
-app.get('/user/:id', getUserController);
+app.post('/users', newUserController);
+app.get('/users/:id', authUser, getUserController);
 app.post('/login', loginController);
 
-app.post('/', authUser, newLinkController);
-app.get('/', getLinksController);
-app.get('/links/:id', getSingleLinkController);
-app.delete('/links/:id', authUser, deleteLinkController);
+app.post('/links', authUser, newLinkController);
+app.get('/links', authUser, getLinksController);
+app.get('/links/:id', authUser, getSingleLinkController);
+app.delete('/links/:idLink', authUser, deleteLinkController);
+app.post('/vote/:id', authUser, setVote);
 
 app.use((req, res) => {
   res.status(404).send({
@@ -54,5 +56,5 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log('Server On');
+  console.log(`Server listening at port http://localhost:${PORT}`);
 });
